@@ -3,9 +3,10 @@ import SwiftUI
 import Combine
 
 struct ClockView : View {
+    @State(initialValue: ClockModel(birthdate: ISO8601DateFormatter().date(from:"1984-10-28T00:00:00+0000") ?? Date()))
+    var time: ClockModel
     
-    @State(initialValue: ClockModel(date: Date()))
-    private var time: ClockModel
+    let showsSeconds: Bool
     
     @State
     private var timerSubscription: Cancellable? = nil
@@ -15,14 +16,21 @@ struct ClockView : View {
     private let secondPointerBaseRadius: CGFloat = 0.05
     
     var body: some View {
-        ZStack {
-            Circle().stroke(Color.primary)
-            ClockMarks()
-            ClockIndicator(type: .hour, time: time)
-            ClockIndicator(type: .minute, time: time)
-            ClockIndicator(type: .second, time: time)
+        GeometryReader { metrics in
+
+            ZStack {
+                Circle().fill(Color.black).opacity(0.15)
+                showsSeconds ? Circle().stroke(Color.primary) : nil
+                ClockMarks().padding(1)
+                ClockMonogram(monogram: "LIFE")
+                ClockIndicator(type: .hour, time: time).complicationForeground()
+                ClockIndicator(type: .minute, time: time).complicationForeground()
+                showsSeconds ? nil : Circle().fill(Color.white).frame(width: metrics.size.height * 0.14, height: metrics.size.height * 0.14, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/).complicationForeground()
+                showsSeconds ? nil : Circle().fill(Color.black).frame(width: metrics.size.height * 0.08, height: metrics.size.height * 0.08, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
+                showsSeconds ? ClockIndicator(type: .second, time: time) : nil
+            }
         }
-        .padding()
+        .padding(2)
         .aspectRatio(1, contentMode: .fit)
         .onAppear { self.subscribe() }
         .onDisappear { self.unsubscribe() }
@@ -30,7 +38,7 @@ struct ClockView : View {
     
     private func subscribe() {
         timerSubscription =
-            Timer.publish(every: 1, on: .main, in: .common)
+            Timer.publish(every: 3600*12, on: .main, in: .common)
             .autoconnect()
             .map(ClockModel.init)
             .assign(to: \.time, on: self)
@@ -40,11 +48,3 @@ struct ClockView : View {
         timerSubscription?.cancel()
     }
 }
-
-#if DEBUG
-struct ContentView_Previews : PreviewProvider {
-    static var previews: some View {
-        ClockView()
-    }
-}
-#endif

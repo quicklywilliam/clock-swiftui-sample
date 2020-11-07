@@ -2,6 +2,7 @@
 import SwiftUI
 
 struct ClockIndicator: View {
+    @Environment(\.presentationMode) var presentationMode
     
     enum `Type` {
         case hour
@@ -11,22 +12,14 @@ struct ClockIndicator: View {
         var color: Color {
             switch self {
             case .second: return .red
-            default: return .primary
-            }
-        }
-        
-        var thickness: CGFloat {
-            switch self {
-            case .hour: return 6
-            case .second: return 1
-            case .minute: return 3
+            default: return .white
             }
         }
         
         var relativeLength: CGFloat {
             switch self {
             case .hour: return 0.6
-            default: return 0.95
+            default: return 0.86
             }
         }
         
@@ -64,9 +57,20 @@ struct ClockIndicator: View {
                 path.move(to: c)
                 path.addLine(to: CGPoint(x: c.x, y: c.y - self.type.relativeLength * self.radius(for: geometry.size)))
             }
-            .stroke(style: StrokeStyle(lineWidth: self.type.thickness, lineCap: .round))
-            .fill(self.type.color)
+            .stroke(self.type.color, style: StrokeStyle(lineWidth: thickness(of: geometry.size, type: self.type), lineCap: .round))
             .rotationEffect(self.type.angle(for: self.time))
+        }
+    }
+    
+    private func thickness(of size:CGSize, type: Type) -> CGFloat {
+        guard size.width > 50 else {
+            return 0.06 * size.width
+        }
+        
+        switch type {
+            case .hour: return 0.06 * size.width
+            case .second: return 0.01 * size.width
+            case .minute: return 0.03 * size.width
         }
     }
     

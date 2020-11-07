@@ -2,19 +2,24 @@
 import Foundation
 
 struct ClockModel {
+    var hours: Int
+    var minutes: Int
+    var seconds: Int
     
-    let hours: Int
-    
-    let minutes: Int
-    
-    let seconds: Int
-    
-    init(date: Date) {
-        let calendar = Calendar.current
-        let now = Date()
-        let hours = calendar.component(.hour, from: now)
-        self.hours = hours <= 12 ? hours : hours - 12
-        minutes = calendar.component(.minute, from: now)
-        seconds = calendar.component(.second, from: now)
+    init(birthdate: Date) {
+        let timeIntervalSinceBirth = Date().timeIntervalSince(birthdate)
+        let lifeTimeInterval: TimeInterval = 90 * 365 * 24 * 60 * 60
+
+        let lifePercent = timeIntervalSinceBirth / lifeTimeInterval
+        let wakeUpSecond: TimeInterval = 7 * 3600
+        let currentSeconds: TimeInterval = wakeUpSecond + (lifePercent * 16 * 3600)
+        
+        let hours = floor(currentSeconds/3600)
+        let minutes = floor((currentSeconds - hours*3600) / 60)
+        let seconds = floor(currentSeconds - hours*3600 - minutes*60)
+        
+        self.hours = Int(hours)
+        self.minutes = Int(minutes)
+        self.seconds = Int(seconds)
     }
 }
